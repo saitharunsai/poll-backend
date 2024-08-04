@@ -8,19 +8,27 @@ import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '@config';
 const prisma = new PrismaClient();
 
 export class AuthService {
-  public async signup(userData: CreateUserDto): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+  public async signup(
+    userData: CreateUserDto,
+  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const findUser = await prisma.user.findUnique({ where: { email: userData.email } });
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await prisma.user.create({ data: { ...userData, password: hashedPassword } });
+    //@ts-ignore
+    const createUserData: User = await prisma.user.create({
+      //@ts-ignore
+      data: { ...userData, password: hashedPassword },
+    });
 
     const { accessToken, refreshToken } = await this.generateTokens(createUserData.id);
 
     return { accessToken, refreshToken, user: createUserData };
   }
 
-  public async login(userData: LoginDto): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+  public async login(
+    userData: LoginDto,
+  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const findUser = await prisma.user.findUnique({ where: { email: userData.email } });
     if (!findUser) throw new HttpException(409, `This email ${userData.email} was not found`);
 
@@ -50,7 +58,9 @@ export class AuthService {
     return this.generateTokens(user.id);
   }
 
-  private async generateTokens(userId: string): Promise<{ accessToken: string; refreshToken: string }> {
+  private async generateTokens(
+    userId: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const accessToken = sign({ userId }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = sign({ userId }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 

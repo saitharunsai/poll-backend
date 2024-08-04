@@ -3,7 +3,10 @@ import { z } from 'zod';
 export const PollSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(1, 'Title is required').max(255, 'Title must be 255 characters or less'),
-  question: z.string().min(1, 'Question is required').max(1000, 'Question must be 1000 characters or less'),
+  question: z
+    .string()
+    .min(1, 'Question is required')
+    .max(1000, 'Question must be 1000 characters or less'),
   options: z.array(z.string()).min(2, 'At least two options are required'),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -29,8 +32,8 @@ export const UpdatePollSchema = CreatePollSchema.partial();
 export const AnswerSchema = z.object({
   id: z.string().uuid(),
   pollId: z.string().uuid(),
-  userId: z.string().uuid(),
-  option: z.string(),
+  // userId: z.string().uuid(),
+  // option: z.string(),
   createdAt: z.date(),
 });
 

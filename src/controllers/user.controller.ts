@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { UserService } from '@services/user.service';
 import { CreateUserDto, UpdateUserDto } from '@schemas/user.schema';
+import { RequestWithUser } from '@/interfaces/auth.interface';
 
 export class UserController {
   public userService = new UserService();
@@ -21,6 +22,21 @@ export class UserController {
       const findOneUserData = await this.userService.findUserById(userId);
 
       res.status(200).json({ data: findOneUserData, message: 'findOne' });
+    } catch (error) {
+      next(error);
+    }
+  };
+  public loggedInUser = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const userId = req.user.id;
+
+      const findOneUserData = await this.userService.findUserById(userId);
+
+      res.status(200).json({ data: findOneUserData });
     } catch (error) {
       next(error);
     }

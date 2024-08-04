@@ -16,7 +16,7 @@ export const ValidationMiddleware = (schema: ZodSchema) => {
     } catch (e) {
       if (e instanceof z.ZodError) {
         // Extract validation errors and format the message
-        const message = e.errors.map((error) => error.message).join(', ');
+        const message = e.errors.map(error => error.message).join(', ');
         next(new HttpException(400, message));
       } else {
         next(e);

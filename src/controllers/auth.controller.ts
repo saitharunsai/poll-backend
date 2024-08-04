@@ -28,7 +28,11 @@ export class AuthController {
     }
   };
 
-  public logOut = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public logOut = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const userId = req.user.id;
       await this.authService.logout(userId);
@@ -44,7 +48,7 @@ export class AuthController {
       const { refreshToken } = req.body;
       const tokens = await this.authService.refreshToken(refreshToken);
 
-      res.status(200).json({ data: tokens, message: 'token refreshed' });
+      res.status(200).json({ ...tokens, message: 'token refreshed' });
     } catch (error) {
       next(error);
     }

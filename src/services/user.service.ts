@@ -32,7 +32,10 @@ export class UserService {
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData = await this.users.create({ data: { ...userData, password: hashedPassword } });
+    const createUserData = await this.users.create({
+      //@ts-ignore
+      data: { ...userData, password: hashedPassword },
+    });
     return createUserData;
   }
 
@@ -42,7 +45,8 @@ export class UserService {
 
     if (userData.email) {
       const findUserByEmail = await this.users.findUnique({ where: { email: userData.email } });
-      if (findUserByEmail && findUserByEmail.id !== userId) throw new HttpException(409, `This email ${userData.email} already exists`);
+      if (findUserByEmail && findUserByEmail.id !== userId)
+        throw new HttpException(409, `This email ${userData.email} already exists`);
     }
 
     if (userData.password) {
@@ -50,7 +54,10 @@ export class UserService {
       userData = { ...userData, password: hashedPassword };
     }
 
-    const updateUserData = await this.users.update({ where: { id: userId }, data: { ...userData } });
+    const updateUserData = await this.users.update({
+      where: { id: userId },
+      data: { ...userData },
+    });
     return updateUserData;
   }
 

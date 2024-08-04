@@ -41,7 +41,7 @@ export class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(cors({ origin: ["http://localhost:5173"], credentials: CREDENTIALS,  }));
+    this.app.use(cors({ origin: ['http://localhost:5173'], credentials: CREDENTIALS }));
     this.app.use(helmet());
     this.app.use(compression());
     this.app.use(express.json());

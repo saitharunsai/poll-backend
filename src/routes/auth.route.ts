@@ -16,23 +16,16 @@ export class AuthRoute implements Routes {
 
   private initializeRoutes() {
     this.router.post(
-      `${this.path}/signup`, 
-      ValidationMiddleware(CreateUserSchema), 
-      this.authController.signUp
+      `${this.path}/signup`,
+      ValidationMiddleware(CreateUserSchema),
+      this.authController.signUp,
     );
     this.router.post(
-      `${this.path}/login`, 
-      ValidationMiddleware(LoginSchema), 
-      this.authController.logIn
+      `${this.path}/login`,
+      ValidationMiddleware(LoginSchema),
+      this.authController.logIn,
     );
-    this.router.post(
-      `${this.path}/logout`, 
-      AuthMiddleware, 
-      this.authController.logOut
-    );
-    this.router.post(
-      `${this.path}/refresh-token`,
-      this.authController.refreshToken
-    );
+    this.router.post(`${this.path}/logout`, AuthMiddleware, this.authController.logOut);
+    this.router.post(`${this.path}/refresh-token`, this.authController.refreshToken);
   }
 }
