@@ -9,14 +9,15 @@ const prisma = new PrismaClient();
 
 export const AuthMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
   try {
-    const Authorization = req.cookies['Authorization'] || (req.header('Authorization') ? req.header('Authorization').split('Bearer ')[1] : null);
+    const Authorization =
+      req.cookies['Authorization'] ||
+      (req.header('Authorization') ? req.header('Authorization').split('Bearer ')[1] : null);
 
     if (Authorization) {
       const secretKey: string = ACCESS_TOKEN_SECRET;
       const verificationResponse = (await verify(Authorization, secretKey)) as DataStoredInToken;
       const userId = verificationResponse.userId;
       const findUser = await prisma.user.findUnique({ where: { id: userId } });
-
       if (findUser) {
         req.user = findUser;
         next();

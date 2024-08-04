@@ -1,10 +1,14 @@
 import { Server, Socket } from 'socket.io';
-import { verifyJwt } from '../utils/jwt';
 import { UserService } from './user.service';
+import { PollService } from './poll.service';
+import { ACCESS_TOKEN_SECRET } from '@/config';
+import { verify } from 'jsonwebtoken';
+import { DataStoredInToken } from '@/interfaces/auth.interface';
 
 export class SocketService {
   private io: Server;
   private userService: UserService;
+  private pollService: PollService;
 
   constructor(server: any) {
     this.io = new Server(server, {
@@ -15,6 +19,7 @@ export class SocketService {
       },
     });
     this.userService = new UserService();
+    this.pollService = new PollService();
     this.initialize();
   }
 
@@ -26,8 +31,9 @@ export class SocketService {
       }
 
       try {
-        const decoded = verifyJwt(token);
-        const user = await this.userService.findUserById(decoded.userId);
+        const secretKey: string = ACCESS_TOKEN_SECRET;
+        const verificationResponse = (await verify(token, secretKey)) as DataStoredInToken;
+        const user = await this.userService.findUserById(verificationResponse.userId);
         if (!user) {
           return next(new Error('User not found'));
         }
@@ -54,6 +60,66 @@ export class SocketService {
 
       socket.on('leavePoll', (pollId: string) => {
         socket.leave(`poll_${pollId}`);
+      });
+
+      socket.on('startPoll', async (pollId: string) => {
+        try {
+          const startPollData = { pollId };
+          const updatedPoll = await this.pollService.startPoll(startPollData, socket.data.user.id);
+
+          const pollData = {
+            pollId: updatedPoll.id,
+            status: 'active',
+            startTime: updatedPoll.startTime.toISOString(),
+            endTime: updatedPoll.endTime.toISOString(),
+          };
+
+          this.io.to(`poll_${pollId}`).emit('pollStarted', pollData);
+          socket.emit('pollStartedConfirmation', pollData);
+        } catch (error) {
+          console.error('Error starting poll:', error);
+          socket.emit('pollError', { message: 'Failed to start poll', error: error.message });
+        }
+      });
+
+      socket.on('getPollStatus', async (pollId: string) => {
+        try {
+          const poll = await this.pollService.getPoll(pollId);
+
+          if (!poll) {
+            throw new Error('Poll not found');
+          }
+
+          const now = new Date();
+          const endTime = new Date(poll.endTime);
+
+          if (now > endTime || !poll.isActive) {
+            socket.emit('pollStatus', { pollId, status: 'ended' });
+          } else {
+            socket.emit('pollStatus', {
+              pollId,
+              status: 'active',
+              startTime: poll.startTime.toISOString(),
+              endTime: poll.endTime.toISOString(),
+            });
+          }
+        } catch (error) {
+          console.error('Error getting poll status:', error);
+          socket.emit('pollError', { message: 'Failed to get poll status' });
+        }
+      });
+
+      socket.on('submitAnswer', async answerData => {
+        try {
+          const answer = await this.pollService.submitAnswer(answerData);
+          const updatedPoll = await this.pollService.getPoll(answerData.pollId);
+
+          this.io.to(`poll_${answerData.pollId}`).emit('pollAnswered', updatedPoll);
+          socket.emit('answerSubmitted', answer);
+        } catch (error) {
+          console.error('Error submitting answer:', error);
+          socket.emit('pollError', { message: 'Failed to submit answer', error: error.message });
+        }
       });
     });
   }

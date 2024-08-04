@@ -1,6 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 import { HttpException } from '@exceptions/httpException';
-import { CreatePollDto, UpdatePollDto, Poll, Answer, CreateAnswerDto, StartPollDto } from '@schemas/poll.schema';
+import {
+  CreatePollDto,
+  UpdatePollDto,
+  Poll,
+  Answer,
+  CreateAnswerDto,
+  StartPollDto,
+} from '@schemas/poll.schema';
 import { socketService } from '@/server';
 
 const prisma = new PrismaClient();
@@ -12,10 +19,14 @@ export class PollService {
     });
 
     if (activePolls.length > 0) {
-      throw new HttpException(400, 'You already have an active poll. Please end it before creating a new one.');
+      throw new HttpException(
+        400,
+        'You already have an active poll. Please end it before creating a new one.',
+      );
     }
 
     const poll = await prisma.poll.create({
+      //@ts-ignore
       data: {
         ...pollData,
         createdBy: userId,
@@ -69,11 +80,14 @@ export class PollService {
     }
 
     const activePolls = await prisma.poll.findMany({
-      where: { createdBy: userId, isActive: true },
+      where: { createdBy: userId, isActive: true, status: 'STARTED' },
     });
 
     if (activePolls.length > 0) {
-      throw new HttpException(400, 'You already have an active poll. Please end it before starting a new one.');
+      throw new HttpException(
+        400,
+        'You already have an active poll. Please end it before starting a new one.',
+      );
     }
 
     const startTime = new Date();
@@ -84,11 +98,20 @@ export class PollService {
       data: {
         startTime,
         endTime,
+        status: 'STARTED',
         isActive: true,
       },
     });
 
+    const pollData = {
+      pollId: updatedPoll.id,
+      status: 'active',
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+    };
+
     socketService.emitToAll('pollStarted', updatedPoll);
+    socketService.emitToPoll(updatedPoll.id, 'pollStarted', pollData);
 
     // Schedule poll end
     setTimeout(async () => {
@@ -101,10 +124,11 @@ export class PollService {
   public async endPoll(pollId: string): Promise<Poll> {
     const poll = await prisma.poll.update({
       where: { id: pollId },
-      data: { isActive: false },
+      data: { isActive: false, status: 'COMPLETED' },
     });
 
     socketService.emitToAll('pollEnded', poll);
+    socketService.emitToPoll(pollId, 'pollEnded', poll);
     return poll;
   }
 
@@ -120,11 +144,13 @@ export class PollService {
     }
 
     const answer = await prisma.answer.create({
+      //@ts-ignore
       data: answerData,
     });
 
     const updatedPoll = await this.getPoll(answerData.pollId);
     socketService.emitToAll('pollAnswered', updatedPoll);
+    socketService.emitToPoll(answerData.pollId, 'pollAnswered', updatedPoll);
     return answer;
   }
 
@@ -133,6 +159,7 @@ export class PollService {
       where: {
         createdBy: userId,
         isActive: true,
+        status: 'STARTED',
       },
     });
 
@@ -143,6 +170,7 @@ export class PollService {
     const poll = await this.getPoll(pollId);
     const results = poll.options.map(option => ({
       option,
+      //@ts-ignore
       count: poll.answers.filter(answer => answer.option === option).length,
     }));
 
@@ -154,10 +182,23 @@ export class PollService {
     };
   }
 
-  public async getAllPolls(): Promise<any> {
-    const poll = await prisma.poll.findMany({
+  public async getAllPolls(userRole: string): Promise<Poll[]> {
+    let whereClause = {};
+
+    if (userRole === 'STUDENT') {
+      whereClause = {
+        isActive: true,
+      };
+    }
+
+    const polls = await prisma.poll.findMany({
+      where: whereClause,
       include: { answers: true },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
-    return poll;
+
+    return polls;
   }
 }

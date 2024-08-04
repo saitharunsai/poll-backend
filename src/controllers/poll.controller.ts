@@ -6,7 +6,11 @@ import { RequestWithUser } from '@interfaces/auth.interface';
 export class PollController {
   public pollService = new PollService();
 
-  public createPoll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public createPoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const pollData: CreatePollDto = req.body;
       const createdPoll = await this.pollService.createPoll(pollData, req.user.id);
@@ -16,7 +20,11 @@ export class PollController {
     }
   };
 
-  public getPoll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public getPoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const pollId = req.params.id;
       const poll = await this.pollService.getPoll(pollId);
@@ -26,7 +34,11 @@ export class PollController {
     }
   };
 
-  public updatePoll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public updatePoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const pollId = req.params.id;
       const pollData: UpdatePollDto = req.body;
@@ -37,7 +49,25 @@ export class PollController {
     }
   };
 
-  public deletePoll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public endPoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const startPollData: StartPollDto = req.body;
+      const updatedPoll = await this.pollService.endPoll(startPollData.pollId);
+      res.status(200).json({ data: updatedPoll, message: 'Poll Ended successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public deletePoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const pollId = req.params.id;
       await this.pollService.deletePoll(pollId);
@@ -47,7 +77,11 @@ export class PollController {
     }
   };
 
-  public startPoll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public startPoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const startPollData: StartPollDto = req.body;
       const startedPoll = await this.pollService.startPoll(startPollData, req.user.id);
@@ -57,7 +91,11 @@ export class PollController {
     }
   };
 
-  public submitAnswer = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public submitAnswer = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const answerData: CreateAnswerDto = {
         ...req.body,
@@ -70,7 +108,11 @@ export class PollController {
     }
   };
 
-  public getActivePoll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public getActivePoll = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const activePoll = await this.pollService.getActivePoll(req.user.id);
       if (activePoll) {
@@ -83,7 +125,11 @@ export class PollController {
     }
   };
 
-  public getPollResults = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public getPollResults = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const pollId = req.params.id;
       const results = await this.pollService.getPollResults(pollId);
@@ -93,9 +139,13 @@ export class PollController {
     }
   };
 
-  public getAllPolls = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public getAllPolls = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      const results = await this.pollService.getAllPolls();
+      const results = await this.pollService.getAllPolls(req.user.role);
       res.status(200).json({ data: results, message: 'Poll results retrieved successfully' });
     } catch (error) {
       next(error);

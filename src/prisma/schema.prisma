@@ -38,6 +38,7 @@ model Poll {
   updatedAt    DateTime  @updatedAt
   startTime    DateTime?
   endTime      DateTime?
+  status       Status    @default(PENDING)
   duration     Int       // Duration in seconds
   isActive     Boolean   @default(false)
   createdBy    String
@@ -60,4 +61,10 @@ model Answer {
 enum Role {
   TEACHER
   STUDENT
+}
+
+enum Status {
+  PENDING
+  STARTED
+  COMPLETED
 }
