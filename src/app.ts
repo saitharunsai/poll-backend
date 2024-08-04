@@ -9,6 +9,7 @@ import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { SocketService } from '@services/socket.service';
 import { UserRoute } from './routes/users.route';
 import { AuthRoute } from './routes/auth.route';
+import { PollRoute } from './routes/poll.route';
 
 export class App {
   public app: express.Application;
@@ -40,7 +41,7 @@ export class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
+    this.app.use(cors({ origin: ["http://localhost:5173"], credentials: CREDENTIALS,  }));
     this.app.use(helmet());
     this.app.use(compression());
     this.app.use(express.json());
@@ -49,7 +50,7 @@ export class App {
   }
 
   private initializeRoutes() {
-    [new UserRoute(), new AuthRoute()].forEach(route => {
+    [new UserRoute(), new AuthRoute(), new PollRoute()].forEach(route => {
       this.app.use('/', route.router);
     });
   }
