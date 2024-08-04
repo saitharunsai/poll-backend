@@ -41,7 +41,6 @@ export class SocketService {
     this.io.on('connection', (socket: Socket) => {
       console.log(`User connected: ${socket.data.user.id}`);
 
-      // Join a room based on user role
       const room = socket.data.user.role === 'TEACHER' ? 'teachers' : 'students';
       socket.join(room);
 
@@ -49,6 +48,13 @@ export class SocketService {
         console.log(`User disconnected: ${socket.data.user.id}`);
       });
 
+      socket.on('joinPoll', (pollId: string) => {
+        socket.join(`poll_${pollId}`);
+      });
+
+      socket.on('leavePoll', (pollId: string) => {
+        socket.leave(`poll_${pollId}`);
+      });
     });
   }
 
@@ -66,6 +72,10 @@ export class SocketService {
 
   public emitToStudents(event: string, data: any) {
     this.io.to('students').emit(event, data);
+  }
+
+  public emitToPoll(pollId: string, event: string, data: any) {
+    this.io.to(`poll_${pollId}`).emit(event, data);
   }
 
   public emitToAll(event: string, data: any) {

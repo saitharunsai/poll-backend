@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import { verify } from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { HttpException } from '@exceptions/httpException';
-import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
+import { DataStoredInToken, RequestWithUser } from '@/interfaces/auth.interface';
 import { ACCESS_TOKEN_SECRET } from '@config';
 
 const prisma = new PrismaClient();
