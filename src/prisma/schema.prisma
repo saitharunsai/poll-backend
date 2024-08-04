@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          Role
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  polls         Poll[]
+  answers       Answer[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Poll {
+  id        String   @id @default(uuid())
+  question  String
+  options   String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  endTime   DateTime?
+  createdBy String
+  creator   User     @relation(fields: [createdBy], references: [id])
+  answers   Answer[]
+}
+
+model Answer {
+  id        String   @id @default(uuid())
+  pollId    String
+  userId    String
+  option    String
+  createdAt DateTime @default(now())
+  poll      Poll     @relation(fields: [pollId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([pollId, userId])
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+}
