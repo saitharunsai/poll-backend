@@ -187,7 +187,8 @@ export class PollService {
 
     if (userRole === 'STUDENT') {
       whereClause = {
-        isActive: true,
+        status: 'COMPLETED',
+        isActive: false,
       };
     }
 
