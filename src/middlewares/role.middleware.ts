@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { HttpException } from '@exceptions/httpException';
+import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@interfaces/auth.interface';
 
 export const RoleMiddleware = (allowedRoles: string[]) => {

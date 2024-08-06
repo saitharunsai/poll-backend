@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { z, ZodSchema } from 'zod';
-import { HttpException } from '@exceptions/httpException';
+import { HttpException } from '@/exceptions/HttpException';
+
 
 /**
  * @name ValidationMiddleware

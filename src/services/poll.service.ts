@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { HttpException } from '@exceptions/httpException';
+import { HttpException } from '@/exceptions/HttpException';
+
 import {
   CreatePollDto,
   UpdatePollDto,

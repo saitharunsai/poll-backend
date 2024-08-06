@@ -2,7 +2,7 @@ import { PrismaClient, User } from '@prisma/client';
 import { compare, hash } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { CreateUserDto, LoginDto } from '@schemas/user.schema';
-import { HttpException } from '@exceptions/httpException';
+import { HttpException } from '@/exceptions/HttpException';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '@config';
 
 const prisma = new PrismaClient();

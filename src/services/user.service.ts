@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from '@schemas/user.schema';
-import { HttpException } from '@exceptions/httpException';
+import { HttpException } from '@/exceptions/HttpException';
 import { hash } from 'bcrypt';
 type UserWithoutPassword = Omit<User, 'password'>;
 
