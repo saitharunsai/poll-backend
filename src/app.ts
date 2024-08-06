@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import http from 'http';
-import { NODE_ENV, PORT, ORIGIN, CREDENTIALS } from '@config';
+import { NODE_ENV, PORT, ORIGIN_WHITELIST, CREDENTIALS } from '@config';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { SocketService } from '@services/socket.service';
 import { UserRoute } from './routes/users.route';
@@ -41,7 +41,19 @@ export class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
+    const allowedOrigins = ORIGIN_WHITELIST.split(',');
+
+    this.app.use(cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: CREDENTIALS
+    }));
+
     this.app.use(helmet());
     this.app.use(compression());
     this.app.use(express.json());

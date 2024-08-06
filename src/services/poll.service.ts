@@ -130,6 +130,7 @@ export class PollService {
 
     socketService.emitToAll('pollEnded', poll);
     socketService.emitToPoll(pollId, 'pollEnded', poll);
+    socketService.emitToAll('pollUpdated', poll);
     return poll;
   }
 
@@ -152,6 +153,7 @@ export class PollService {
     const updatedPoll = await this.getPoll(answerData.pollId);
     socketService.emitToAll('pollAnswered', updatedPoll);
     socketService.emitToPoll(answerData.pollId, 'pollAnswered', updatedPoll);
+    socketService.emitToAll('pollUpdated', updatedPoll);
     return answer;
   }
 
@@ -188,18 +190,20 @@ export class PollService {
 
     if (userRole === 'STUDENT') {
       whereClause = {
-        status: 'COMPLETED',
-        isActive: false,
-      };
+        status: {
+          in: ['COMPLETED', 'STARTED'],
+        },
+      };    
     }
 
     const polls = await prisma.poll.findMany({
       where: whereClause,
       include: { answers: true },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+      orderBy: [
+        { startTime: 'desc' },
+        { createdAt: 'desc' }
+      ],
+    });    
 
     return polls;
   }

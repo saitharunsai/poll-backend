@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { UserService } from './user.service';
 import { PollService } from './poll.service';
-import { ACCESS_TOKEN_SECRET } from '@/config';
+import { ACCESS_TOKEN_SECRET, ORIGIN_WHITELIST } from '@/config';
 import { verify } from 'jsonwebtoken';
 import { DataStoredInToken } from '@/interfaces/auth.interface';
 
@@ -13,7 +13,7 @@ export class SocketService {
   constructor(server: any) {
     this.io = new Server(server, {
       cors: {
-        origin: process.env.CLIENT_URL,
+        origin: ORIGIN_WHITELIST.split(','),
         methods: ['GET', 'POST'],
         credentials: true,
       },
